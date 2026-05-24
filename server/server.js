@@ -15,6 +15,13 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Routes
+const authRoutes = require('./routes/authRoutes');
+const repoRoutes = require('./routes/repoRoutes');
+
+app.use('/api/auth', authRoutes);
+app.use('/api/repo', repoRoutes);
+
 // Test route
 app.get('/', (req, res) => {
   res.json({ message: 'DevLens API is running!' });
