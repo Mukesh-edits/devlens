@@ -53,13 +53,19 @@ const Dashboard = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-8 py-5"
         style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(20px)' }}>
         <h1 className="text-2xl font-black text-white cursor-pointer" onClick={() => navigate('/dashboard')}>
-          Dev<span style={{ color: 'rgba(255,255,255,0.5)' }}>Lens</span>
+          Dev<span style={{ color: 'rgba(255,255,255,0.4)' }}>Lens</span>
         </h1>
         <div className="flex items-center gap-6">
-          <span style={{ color: '#888888' }}>{user?.name}</span>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-black font-black text-sm"
+              style={{ background: '#ffffff' }}>
+              {user?.name?.charAt(0).toUpperCase()}
+            </div>
+            <span style={{ color: '#888888' }}>{user?.name}</span>
+          </div>
           <button
             onClick={handleLogout}
-            className="px-4 py-2 rounded-lg text-sm font-semibold"
+            className="px-4 py-2 rounded-lg text-sm font-semibold transition-all"
             style={{ border: '1px solid rgba(255,255,255,0.15)', color: '#888888' }}
           >
             Logout
@@ -70,17 +76,16 @@ const Dashboard = () => {
       <div className="px-8 pt-32 pb-16 max-w-5xl mx-auto">
 
         {/* Header */}
-        <div className="mb-12">
-          <h2 className="text-5xl font-black text-white mb-3 glow-text">
-            Welcome back, {user?.name}
+        <div className="mb-10">
+          <p style={{ color: '#888888' }} className="mb-1">Good to see you back</p>
+          <h2 className="text-5xl font-black text-white glow-text">
+            {user?.name}
           </h2>
-          <p style={{ color: '#888888', fontSize: '18px' }}>
-            Analyze any GitHub repository with AI
-          </p>
         </div>
 
         {/* Analyze Input */}
-        <form onSubmit={handleAnalyze} className="mb-12">
+        <form onSubmit={handleAnalyze} className="mb-10">
+          <p style={{ color: '#888888' }} className="text-sm mb-3">Analyze a GitHub repository</p>
           <div className="flex gap-3">
             <input
               type="text"
@@ -97,68 +102,97 @@ const Dashboard = () => {
               className="px-8 py-4 rounded-xl font-bold text-black text-lg glow-button disabled:opacity-50"
               style={{ background: '#ffffff', whiteSpace: 'nowrap' }}
             >
-              {analyzing ? 'Analyzing...' : '🔍 Analyze'}
+              {analyzing ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                  </svg>
+                  Analyzing...
+                </span>
+              ) : '🔍 Analyze'}
             </button>
           </div>
-          {error && (
-            <p className="mt-3 text-red-400 text-sm">{error}</p>
-          )}
+          {error && <p className="mt-3 text-red-400 text-sm">{error}</p>}
         </form>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-3 gap-4 mb-10">
           {[
-            { label: 'Repos Analyzed', value: repos.length },
-            { label: 'Avg Quality Score', value: repos.length ? Math.round(repos.reduce((a, r) => a + r.qualityScore, 0) / repos.length) + '%' : '0%' },
-            { label: 'Security Issues', value: repos.reduce((a, r) => a + (r.securityIssues?.length || 0), 0) },
+            { label: 'Repos Analyzed', value: repos.length, icon: '📦' },
+            { label: 'Avg Quality Score', value: repos.length ? Math.round(repos.reduce((a, r) => a + r.qualityScore, 0) / repos.length) + '%' : '—', icon: '📊' },
+            { label: 'Total Files Scanned', value: repos.reduce((a, r) => a + (r.fileCount || 0), 0), icon: '📁' },
           ].map((stat, i) => (
             <div key={i} className="p-6 rounded-2xl"
               style={{ background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="text-2xl mb-3">{stat.icon}</div>
               <div className="text-4xl font-black text-white mb-1">{stat.value}</div>
-              <div style={{ color: '#888888' }}>{stat.label}</div>
+              <div style={{ color: '#666666' }} className="text-sm">{stat.label}</div>
             </div>
           ))}
         </div>
 
         {/* Repos List */}
         <div>
-          <h3 className="text-2xl font-black text-white mb-6">Analyzed Repositories</h3>
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-2xl font-black text-white">Analyzed Repositories</h3>
+            <span style={{ color: '#666666' }} className="text-sm">{repos.length} total</span>
+          </div>
+
           {loading ? (
-            <div className="text-center py-12" style={{ color: '#888888' }}>Loading...</div>
+            <div className="text-center py-12" style={{ color: '#888888' }}>
+              <div className="animate-pulse">Loading...</div>
+            </div>
           ) : repos.length === 0 ? (
-            <div className="text-center py-16 rounded-2xl"
+            <div className="text-center py-20 rounded-2xl"
               style={{ background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <div className="text-5xl mb-4">🔍</div>
+              <div className="text-6xl mb-4">🔍</div>
               <p className="text-white font-bold text-xl mb-2">No repositories yet</p>
               <p style={{ color: '#888888' }}>Paste a GitHub URL above to get started</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {repos.map((repo) => (
                 <div
                   key={repo._id}
                   onClick={() => navigate(`/repo/${repo._id}`)}
-                  className="p-6 rounded-2xl cursor-pointer transition-all hover:border-white"
+                  className="p-6 rounded-2xl cursor-pointer transition-all"
                   style={{ background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.08)' }}
+                  onMouseEnter={e => e.currentTarget.style.border = '1px solid rgba(255,255,255,0.25)'}
+                  onMouseLeave={e => e.currentTarget.style.border = '1px solid rgba(255,255,255,0.08)'}
                 >
                   <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="text-white font-bold text-lg mb-1">
-                        {repo.owner}/{repo.name}
-                      </h4>
-                      <p style={{ color: '#888888' }} className="text-sm mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h4 className="text-white font-bold text-lg">
+                          {repo.owner}/<span className="text-white">{repo.name}</span>
+                        </h4>
+                        {repo.isIndexed && (
+                          <span className="px-2 py-1 rounded-full text-xs font-semibold"
+                            style={{ background: 'rgba(255,255,255,0.08)', color: '#888888' }}>
+                            💬 Chat ready
+                          </span>
+                        )}
+                        {repo.language && (
+                          <span className="px-2 py-1 rounded-full text-xs"
+                            style={{ background: 'rgba(255,255,255,0.05)', color: '#666666' }}>
+                            {repo.language}
+                          </span>
+                        )}
+                      </div>
+                      <p style={{ color: '#666666' }} className="text-sm mb-3">
                         {repo.description || 'No description'}
                       </p>
-                      <div className="flex gap-4 text-sm" style={{ color: '#666666' }}>
-                        <span>⭐ {repo.stars}</span>
-                        <span>🍴 {repo.forks}</span>
+                      <div className="flex gap-5 text-sm" style={{ color: '#555555' }}>
+                        <span>⭐ {repo.stars?.toLocaleString()}</span>
+                        <span>🍴 {repo.forks?.toLocaleString()}</span>
                         <span>📁 {repo.fileCount} files</span>
-                        <span>🌐 {repo.language}</span>
+                        <span>👥 {repo.contributors} contributors</span>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-3xl font-black text-white">{repo.qualityScore}%</div>
-                      <div style={{ color: '#888888' }} className="text-sm">Quality</div>
+                    <div className="text-right ml-6 flex-shrink-0">
+                      <div className="text-4xl font-black text-white">{repo.qualityScore}%</div>
+                      <div style={{ color: '#555555' }} className="text-xs mt-1">quality</div>
                     </div>
                   </div>
                 </div>
