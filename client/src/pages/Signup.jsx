@@ -30,8 +30,8 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: '#0a0a14' }}>
-      <div className="w-full max-w-md p-8 rounded-2xl" style={{ background: '#1a1a2e', border: '1px solid rgba(99,102,241,0.3)' }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: '#09090b' }}>
+      <div className="w-full max-w-md p-8 rounded-2xl" style={{ background: '#161b26', border: '1px solid rgba(255,255,255,0.08)' }}>
 
         <div className="text-center mb-8">
           <h1 className="text-4xl font-black text-white mb-2">Dev<span className="text-indigo-400">Lens</span></h1>

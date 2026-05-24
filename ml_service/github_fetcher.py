@@ -10,7 +10,8 @@ GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
 SUPPORTED_EXTENSIONS = {
     '.py', '.js', '.jsx', '.ts', '.tsx', '.java', '.cpp', '.c',
     '.cs', '.go', '.rb', '.php', '.swift', '.kt', '.rs', '.md',
-    '.html', '.css', '.json', '.yaml', '.yml', '.sh'
+    '.html', '.css', '.json', '.yaml', '.yml', '.sh', '.ipynb',
+    '.txt', '.r', '.m', '.scala', '.vue', '.dart'
 }
 
 def get_headers():

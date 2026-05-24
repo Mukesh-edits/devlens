@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 import os
 import time
+import asyncio
 
 load_dotenv()
 
@@ -42,7 +43,8 @@ async def index_repository(request: IndexRequest):
         from vector_store import upsert_chunks, delete_repo_vectors
 
         print(f"Fetching files for {request.owner}/{request.repo}")
-        files = fetch_repo_files(request.owner, request.repo, max_files=15)
+        # Only fetch 8 files max — fast and enough for good chat
+        files = fetch_repo_files(request.owner, request.repo, max_files=8)
 
         if not files:
             raise HTTPException(status_code=400, detail="No files found in repository")
@@ -53,12 +55,14 @@ async def index_repository(request: IndexRequest):
             chunks = chunk_code(file['path'], file['content'])
             all_chunks.extend(chunks)
 
-        print(f"Generated {len(all_chunks)} chunks, generating embeddings...")
+        # Cap at 50 chunks max — keeps it under free tier limit
+        all_chunks = all_chunks[:50]
+        print(f"Processing {len(all_chunks)} chunks...")
 
-        # Delete old vectors for this repo
+        # Delete old vectors
         delete_repo_vectors(request.repo_id)
 
-        # Generate embeddings in batches with rate limit delay
+        # Embed in batches of 10 with smart delay
         embeddings = []
         batch_size = 10
         for i in range(0, len(all_chunks), batch_size):
@@ -67,8 +71,9 @@ async def index_repository(request: IndexRequest):
                 embedding = get_embedding(chunk['text'])
                 embeddings.append(embedding)
             print(f"Embedded {min(i + batch_size, len(all_chunks))}/{len(all_chunks)} chunks")
+            # Only delay if there are more batches coming
             if i + batch_size < len(all_chunks):
-                time.sleep(65)
+                time.sleep(12)  # 12s delay = ~5 batches/min, well under 100 req/min limit
 
         print("Storing in Pinecone...")
         upsert_chunks(request.repo_id, all_chunks, embeddings)
@@ -95,7 +100,7 @@ async def chat(request: ChatRequest):
 
         if not matches:
             return {
-                "answer": "I don't have enough context about this repository yet. Please index it first."
+                "answer": "I don't have enough context about this repository yet. Please try re-indexing."
             }
 
         answer = chat_with_codebase(request.question, matches)
