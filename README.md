@@ -1,4 +1,4 @@
-# 🔍 DevLens
+# 🔍 DevLens.
 
 > **AI-powered GitHub repository analysis and codebase chat platform**
 
